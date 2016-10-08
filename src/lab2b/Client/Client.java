@@ -32,6 +32,9 @@ public class Client {
             socket = new Socket(address,port);
             inFromUser = new BufferedReader(new InputStreamReader(System.in));
             DataOutputStream toServer = new DataOutputStream(socket.getOutputStream());
+            System.out.print("Enter nickname: ");
+            msg = inFromUser.readLine();
+            toServer.writeBytes("/nick " + msg + '\n');
             new Receive(socket).start();
             while (run){
                 msg = inFromUser.readLine();
