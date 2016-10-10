@@ -6,13 +6,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.*;
 
-/**
- * Created by rasmusjansson on 2016-09-26.
- */
 public class Client {
     private Socket socket;
     private BufferedReader inFromUser;
     private boolean run = true;
+    private DataOutputStream toServer;
+    private StateHandler sh;
 
     public static void main(String[] args) throws IOException{
         if(args.length != 2) {
@@ -31,14 +30,15 @@ public class Client {
             InetAddress address = InetAddress.getByName(addr);
             socket = new Socket(address,port);
             inFromUser = new BufferedReader(new InputStreamReader(System.in));
-            DataOutputStream toServer = new DataOutputStream(socket.getOutputStream());
+            toServer = new DataOutputStream(socket.getOutputStream());
+            sh = new StateHandler(this);
             System.out.print("Enter nickname: ");
             msg = inFromUser.readLine();
             toServer.writeBytes("/nick " + msg + '\n');
             new Receive(socket).start();
             while (run){
                 msg = inFromUser.readLine();
-                toServer.writeBytes(msg + '\n');
+                handleMessage(msg);
             }
         }catch (SocketException e){
             System.out.println("Server is unreachable.");
@@ -47,6 +47,53 @@ public class Client {
         }finally {
             socket.close();
             System.exit(0);
+        }
+    }
+
+    private void handleMessage(String msg){
+        switch (msg.toUpperCase()){
+            case "SC":
+                sh.InvokeStartCalling();
+                break;
+
+            case "CC":
+                sh.InvokeCallConfirmation();
+                break;
+
+            case "AS":
+                sh.InvokeAbortSession();
+                break;
+
+            case "ES":
+                sh.InvokeEndSession();
+                break;
+
+            case "ESC":
+                sh.InvokeEndSessionConfirmation();
+                break;
+
+            case "RC":
+                sh.InvokeReceiveCall();
+                break;
+
+            case "CA":
+                sh.InvokeCallAccepted();
+                break;
+
+            case "STATE":
+                sh.PrintState();
+                break;
+
+            default:
+                Send(msg);
+        }
+    }
+
+    public void Send(String msg){
+        try {
+            toServer.writeBytes(msg + '\n');
+        }catch (IOException e){
+            e.printStackTrace();
         }
     }
 

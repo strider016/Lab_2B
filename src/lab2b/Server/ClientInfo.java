@@ -4,11 +4,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.InetAddress;
 import java.net.Socket;
 
-/**
- * Created by rasmusjansson on 2016-09-26.
- */
 public class ClientInfo extends Thread{
     private Socket socket;
     private String username;
@@ -17,6 +15,7 @@ public class ClientInfo extends Thread{
     private BufferedReader reader;
     private boolean run = true;
     private Server server;
+    private InetAddress ipAddress;
 
     public ClientInfo(int id,Server server) throws IOException {
         this.id = id;
@@ -29,6 +28,7 @@ public class ClientInfo extends Thread{
         this.server = server;
         printWriter = new PrintWriter(this.socket.getOutputStream());
         reader = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
+        ipAddress = socket.getInetAddress();
     }
 
     public String getUsername() {
@@ -37,6 +37,10 @@ public class ClientInfo extends Thread{
     
     public int getClientId() {
         return id;
+    }
+
+    public InetAddress getIpAddress() {
+        return ipAddress;
     }
 
     public void setUsername(String username) {
@@ -52,15 +56,17 @@ public class ClientInfo extends Thread{
                 else
                     handleMessage(msg);
             }
+        }catch(NullPointerException e){
+
         }catch (Exception e){
             e.printStackTrace();
         }
-        System.out.println("Client has disconnected.");
+        System.out.println(id + " - " + username + ": has disconnected.");
     }
 
     public void send(String msg){
         try {
-            printWriter.println(msg.toUpperCase());
+            printWriter.println(msg);
             printWriter.flush();
         }catch (NullPointerException e){
             run = false;
