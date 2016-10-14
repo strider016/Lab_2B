@@ -67,4 +67,12 @@ public class Server {
                 sb.append(entry.getValue().getUsername() + '\n');
         return sb.toString();
     }
+
+    public synchronized ClientInfo GetUser(String username){
+        for (Map.Entry<Integer,ClientInfo> entry: clients.entrySet()) {
+            if (entry.getValue().getUsername().equals(username))
+                return entry.getValue();
+        }
+        return null;
+    }
 }

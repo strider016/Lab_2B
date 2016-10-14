@@ -4,7 +4,8 @@ import lab2b.Client.Client;
 
 public class StateCalling extends ClientState{
     @Override
-    public ClientState CallConfirmation(Client client) {
+    public ClientState CallConfirmation(String user,Client client) {
+        client.Send("SIP ACK " + user);
         return new StateInSession();
     }
 

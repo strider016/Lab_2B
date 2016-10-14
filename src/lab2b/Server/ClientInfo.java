@@ -51,7 +51,7 @@ public class ClientInfo extends Thread{
         try {
             while (run){
                 String msg = reader.readLine();
-                if(msg.startsWith("/"))
+                if(msg.startsWith("/") || msg.startsWith("SIP"))
                     handleCommand(msg);
                 else
                     handleMessage(msg);
@@ -93,8 +93,31 @@ public class ClientInfo extends Thread{
                 send(username);
                 break;
 
-            case "/call":
-                send("Not implemented.");
+            case "sip":
+                ClientInfo tmp = null;
+                System.out.println(msg);
+                if (msg.startsWith("SIP INVITE")) {
+                    String[] array = msg.split(" ");
+                    tmp = server.GetUser(array[2]);
+                    msg = msg.replace(("#" + tmp.username), tmp.ipAddress.toString());
+                    System.out.println(msg);
+                }else if (msg.startsWith("SIP TRO ")){
+                    String[] array = msg.split(" ");
+                    tmp = server.GetUser(array[2]);
+                    msg = msg.replace(" "+array[2],"");
+                    System.out.println(msg);
+                }else if (msg.startsWith("SIP ACK ")){
+                    String[] array = msg.split(" ");
+                    tmp = server.GetUser(array[2]);
+                    msg = msg.replace(" "+array[2],"");
+                    System.out.println(msg);
+                }else if (msg.startsWith("SIP BYE ")){
+                    String[] array = msg.split(" ");
+                    tmp = server.GetUser(array[2]);
+                    msg = msg.replace(" "+array[2],"");
+                    System.out.println(msg);
+                }
+                tmp.send(msg);
                 break;
 
             case "/quit":
@@ -121,8 +144,8 @@ public class ClientInfo extends Thread{
             return "/who";
         else if (msg.toLowerCase().equals("/whoami"))
             return "/whoami";
-        else if (msg.toLowerCase().startsWith("/call"))
-            return "/call";
+        else if (msg.toLowerCase().startsWith("sip"))
+            return "sip";
         else if (msg.toLowerCase().equals("/quit"))
             return "/quit";
         else
@@ -130,6 +153,9 @@ public class ClientInfo extends Thread{
     }
 
     private String extractMessage(String cmd,String msg){
+        if (cmd.equals("sip")){
+            return msg;
+        }
         if (cmd.equals(msg.toLowerCase()))
             return msg;
         String[] tmp = msg.split(cmd+" ");

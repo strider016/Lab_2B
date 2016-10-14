@@ -10,28 +10,28 @@ public class StateHandler {
         currentState = new StateIdle();
     }
 
-    public void PrintState(){
+    public void InvokePrintState(){
         currentState.PrintState();
     }
 
-    public void InvokeStartCalling(){
-        currentState = currentState.StartCalling(client);
+    public void InvokeStartCalling(String receiveUser){
+        currentState = currentState.StartCalling(receiveUser,client);
     }
 
-    public void InvokeReceiveCall(){
-        currentState = currentState.ReceiveCall(client);
+    public void InvokeReceiveCall(String msg){
+        currentState = currentState.ReceiveCall(msg,client);
     }
 
     public void InvokeCallAccepted(){
         currentState = currentState.CallAccepted(client);
     }
 
-    public void InvokeCallConfirmation(){
-        currentState = currentState.CallConfirmation(client);
+    public void InvokeCallConfirmation(String user){
+        currentState = currentState.CallConfirmation(user,client);
     }
 
-    public void InvokeEndSession(){
-        currentState = currentState.EndSession(client);
+    public void InvokeEndSession(String user){
+        currentState = currentState.EndSession(user,client);
     }
 
     public void InvokeAbortSession(){
@@ -40,5 +40,9 @@ public class StateHandler {
 
     public void InvokeEndSessionConfirmation(){
         currentState = currentState.EndSessionConfirmation(client);
+    }
+
+    public void InvokeCancel(String user){
+        currentState = currentState.Cancel(user,client);
     }
 }

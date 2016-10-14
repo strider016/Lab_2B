@@ -5,6 +5,7 @@ import lab2b.Client.Client;
 public class StateCallback extends ClientState{
     @Override
     public ClientState CallAccepted(Client client) {
+        client.setInSession();
         return new StateInSession();
     }
 
