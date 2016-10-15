@@ -13,4 +13,9 @@ public class StateCalling extends ClientState{
     public void PrintState() {
         System.out.println("Calling");
     }
+
+    @Override
+    public State GetState() {
+        return State.CALLING;
+    }
 }

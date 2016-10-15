@@ -8,39 +8,31 @@ import java.net.InetAddress;
 import java.net.Socket;
 
 public class ClientInfo extends Thread{
-    private Socket socket;
     private String username;
-    private int id;
+    private final int id;
     private PrintWriter printWriter;
     private BufferedReader reader;
     private boolean run = true;
-    private Server server;
+    private final Server server;
     private InetAddress ipAddress;
 
-    public ClientInfo(int id,Server server) throws IOException {
-        this.id = id;
+    public ClientInfo(Server server) {
+        this.id = 0;
         this.server = server;
+        username = "";
     }
 
     public ClientInfo(Socket socket,int id,Server server) throws IOException {
-        this.socket = socket;
         this.id = id;
         this.server = server;
-        printWriter = new PrintWriter(this.socket.getOutputStream());
-        reader = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
+        printWriter = new PrintWriter(socket.getOutputStream());
+        reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         ipAddress = socket.getInetAddress();
+        username = "";
     }
 
     public String getUsername() {
         return username;
-    }
-    
-    public int getClientId() {
-        return id;
-    }
-
-    public InetAddress getIpAddress() {
-        return ipAddress;
     }
 
     public void setUsername(String username) {
@@ -56,11 +48,12 @@ public class ClientInfo extends Thread{
                 else
                     handleMessage(msg);
             }
-        }catch(NullPointerException e){
+        }catch(NullPointerException ignored){
 
         }catch (Exception e){
             e.printStackTrace();
         }
+        server.removeClient(id);
         System.out.println(id + " - " + username + ": has disconnected.");
     }
 
@@ -82,7 +75,11 @@ public class ClientInfo extends Thread{
                 break;
 
             case "/nick":
-                setUsername(msg);
+                if (server.GetUser(msg) == null) {
+                    setUsername(msg);
+                    send("OK Nickname changed");
+                }else
+                    send("Nickname in use");
                 break;
 
             case "/who":
@@ -116,7 +113,18 @@ public class ClientInfo extends Thread{
                     tmp = server.GetUser(array[2]);
                     msg = msg.replace(" "+array[2],"");
                     System.out.println(msg);
+                }else if (msg.startsWith("SIP 200")){
+                    String[] array = msg.split(" ");
+                    tmp = server.GetUser(array[3]);
+                    msg = msg.replace(" "+array[3],"");
+                    System.out.println(msg);
+                }else if (msg.startsWith("SIP CANCEL")){
+                    String[] array = msg.split(" ");
+                    tmp = server.GetUser(array[2]);
+                    msg = msg.replace(" "+array[2],"");
+                    System.out.println(msg);
                 }
+                assert tmp != null;
                 tmp.send(msg);
                 break;
 
@@ -153,9 +161,8 @@ public class ClientInfo extends Thread{
     }
 
     private String extractMessage(String cmd,String msg){
-        if (cmd.equals("sip")){
+        if (cmd.equals("sip"))
             return msg;
-        }
         if (cmd.equals(msg.toLowerCase()))
             return msg;
         String[] tmp = msg.split(cmd+" ");
@@ -165,13 +172,11 @@ public class ClientInfo extends Thread{
     }
 
     private String getCommandList(){
-        StringBuilder sb = new StringBuilder();
-        sb.append("/help   \tGet list of all available commands.\n");
-        sb.append("/nick   \tChange nickname. /nick <nickname>\n");
-        sb.append("/who    \tSee connected users.\n");
-        sb.append("/whoami \tWhat's my nickname.\n");
-        sb.append("/call   \tCall another user. /call <username>\n");
-        sb.append("/quit   \tDisconnect from server.\n");
-        return sb.toString();
+        return "/help   \tGet list of all available commands.\n" +
+                "/nick   \tChange nickname. /nick <nickname>\n" +
+                "/who    \tSee connected users.\n" +
+                "/whoami \tWhat's my nickname.\n" +
+                "/call   \tCall another user. /call <username>\n" +
+                "/quit   \tDisconnect from server.\n";
     }
 }

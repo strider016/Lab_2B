@@ -10,13 +10,18 @@ public class StateInSession extends ClientState{
     }
 
     @Override
-    public ClientState AbortSession(Client client) {
-        client.Send("SIP 200 OK");
+    public ClientState AbortSession(String user,Client client) {
+        client.Send("SIP 200 OK " + user);
         return new StateIdle();
     }
 
     @Override
     public void PrintState() {
         System.out.println("InSession");
+    }
+
+    @Override
+    public State GetState() {
+        return State.INSESSION;
     }
 }

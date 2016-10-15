@@ -1,5 +1,7 @@
 package lab2b.Client;
 
+import lab2b.Client.State.State;
+
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -13,9 +15,25 @@ public class Client {
     private DataOutputStream toServer;
     private StateHandler sh;
     private String username;
-    private boolean ReceivedTRO = false;
-    private boolean InSession = false;
     private String toUsername;
+    private Receive receive;
+    private String myExternalAddress;
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getExternalIp(){
+        return myExternalAddress;
+    }
+
+    public void setToUsername(String toUsername){
+        this.toUsername = toUsername;
+    }
+
+    public void endClient(){
+        run = false;
+    }
 
     public static void main(String[] args) throws IOException{
         if(args.length != 2) {
@@ -26,20 +44,21 @@ public class Client {
         client.Start(args);
     }
 
-    public void Start(String[] args) throws IOException{
+    private void Start(String[] args) throws IOException{
         String addr = args[0];
         int port = Integer.parseInt(args[1]);
         try {
             String msg;
+            myExternalAddress = InetAddress.getLocalHost().getHostAddress();
             InetAddress address = InetAddress.getByName(addr);
             socket = new Socket(address,port);
             inFromUser = new BufferedReader(new InputStreamReader(System.in));
             toServer = new DataOutputStream(socket.getOutputStream());
             sh = new StateHandler(this);
-            System.out.print("Enter nickname: ");
-            username = inFromUser.readLine();
-            toServer.writeBytes("/nick " + username + '\n');
-            new Receive(socket).start();
+            BufferedReader sin = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            initializeSession(sin);
+            receive = new Receive(sin,sh,this);
+            receive.start();
             while (run){
                 msg = inFromUser.readLine();
                 handleMessage(msg);
@@ -52,22 +71,44 @@ public class Client {
             e.printStackTrace();
         }finally {
             socket.close();
-            System.exit(0);
         }
+        System.exit(0);
     }
 
-    private void handleMessage(String msg){
+    private void initializeSession(BufferedReader sin) throws IOException{
+        String responseMsg;
+        System.out.print("Enter nickname: ");
+        username = inFromUser.readLine();
+        toServer.writeBytes("/nick " + username + '\n');
+        while (true) {
+            responseMsg = sin.readLine();
+            if (responseMsg.startsWith("OK Nickname changed"))
+                break;
+            else if(responseMsg.startsWith("Nickname in use")) {
+                System.out.println("Nickname is already taken.");
+                System.out.print("Enter nickname: ");
+                username = inFromUser.readLine();
+                toServer.writeBytes("/nick " + username + '\n');
+            }
+        }
+        System.out.println("Welcome " + username + "!");
+    }
+
+    private void handleMessage(String msg) {
         if (msg.startsWith("/call ")){
-            toUsername = msg.substring("/call ".length());
-            sh.InvokeStartCalling(toUsername);
+            String[] tmp = msg.split(" ");
+            if (tmp.length == 2) {
+                toUsername = tmp[1];
+                receive.setSendUsername(toUsername);
+                sh.InvokeStartCalling(toUsername);
+            }else
+                System.out.println("Invalid command. /call <user>");
         }
-        else if (ReceivedTRO && msg.equals("y")) {
-            sh.InvokeCallAccepted();
-            InSession = true;
-        }
-        else if (ReceivedTRO && msg.equals("n"))
+        else if (sh.InvokeGetState() == State.IDLE && msg.startsWith("y"))
+            sh.InvokeReceiveCall(toUsername);
+        else if (sh.InvokeGetState() == State.IDLE && msg.startsWith("n"))
             sh.InvokeCancel(toUsername);
-        else if (InSession && msg.equals("/end"))
+        else if (sh.InvokeGetState() == State.INSESSION && msg.equals("/end"))
             sh.InvokeEndSession(toUsername);
         else
             Send(msg);
@@ -78,108 +119,6 @@ public class Client {
             toServer.writeBytes(msg + '\n');
         }catch (IOException e){
             e.printStackTrace();
-        }
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public String getExternalIp(){
-        try {
-            return InetAddress.getLocalHost().getHostAddress();
-        }catch (UnknownHostException e){
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    public void setInSession(){
-        InSession=true;
-    }
-
-    class Receive extends Thread{
-        private Socket socket;
-        private String sendUsername;
-        public Receive(Socket socket){this.socket = socket;}
-        public void run(){
-            try {
-                String responseMsg;
-                boolean run = true;
-                BufferedReader sin = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                while (run){
-                    responseMsg = sin.readLine();
-                    if (responseMsg != null) {
-                        if (responseMsg.startsWith("SIP")) {
-                            handleMessage(responseMsg);
-                        }else
-                            System.out.println(responseMsg);
-                    }
-                }
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-        }
-
-        private void handleMessage(String msg){
-            SIPCommand type = getSIPCommand(msg.toUpperCase());
-            String[] array;
-            String username;
-            switch (type){
-                case INVITE:
-                    array = msg.split(" ");
-                    toUsername = array[3];
-                    InetAddress ipaddress = null;
-                    try{
-                        ipaddress = InetAddress.getByName(array[5]);
-                    }catch (Exception e){
-                        e.printStackTrace();
-                    }
-                    int port = Integer.parseInt(array[6]);
-
-                    //System.out.println("Incoming call");
-                    //System.out.print("Do you wanna accept? ");
-                    sh.InvokeReceiveCall(toUsername);
-                    break;
-
-                case TRO:
-                    ReceivedTRO = true;
-                    sh.InvokeCallConfirmation(toUsername);
-                    break;
-
-                case ACK:
-                    InSession = true;
-                    sh.InvokeCallAccepted();
-                    break;
-
-                case BYE:
-                    ReceivedTRO = false;
-                    InSession = false;
-                    sh.InvokeAbortSession();
-                    break;
-
-                case OK:
-                    ReceivedTRO = false;
-                    InSession = false;
-                    sh.InvokeEndSessionConfirmation();
-                    break;
-
-                default:;
-            }
-        }
-
-        private SIPCommand getSIPCommand(String msg){
-            if(msg.startsWith("SIP INVITE"))
-                return SIPCommand.INVITE;
-            else if (msg.startsWith("SIP TRO"))
-                return SIPCommand.TRO;
-            else if (msg.startsWith("SIP OK"))
-                return SIPCommand.OK;
-            else if (msg.startsWith("SIP ACK"))
-                return SIPCommand.ACK;
-            else if (msg.startsWith("SIP BYE"))
-                return SIPCommand.BYE;
-            return SIPCommand.UNKNOWN;
         }
     }
 }

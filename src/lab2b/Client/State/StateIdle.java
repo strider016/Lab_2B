@@ -25,6 +25,11 @@ public class StateIdle extends ClientState{
         System.out.println("Idle");
     }
 
+    @Override
+    public State GetState() {
+        return State.IDLE;
+    }
+
     private int generatePort(){
         int startRange = 6000;
         int endRange = 6050;
