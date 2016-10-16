@@ -1,6 +1,7 @@
 package lab2b.Client;
 
 import lab2b.Client.State.State;
+import lab2b.Client.VOIP.MediaStream;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -17,13 +18,17 @@ public class Client {
     private String username;
     private String toUsername;
     private Receive receive;
-    private String myExternalAddress;
+    private InetAddress myExternalAddress;
+    private int port;
+    private InetAddress remoteIpAddress;
+    private MediaStream stream;
+    private boolean incomingCall = false;
 
     public String getUsername() {
         return username;
     }
 
-    public String getExternalIp(){
+    public InetAddress getExternalIp(){
         return myExternalAddress;
     }
 
@@ -33,6 +38,39 @@ public class Client {
 
     public void endClient(){
         run = false;
+    }
+
+    public void setStream() {
+        try {
+            this.stream = new MediaStream(port);
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    public void setRemoteIpAddress(InetAddress remoteIpAddress) {
+        this.remoteIpAddress = remoteIpAddress;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    public void connectTo(){
+        stream.connectTo(remoteIpAddress,port);
+    }
+
+    public void startStream(){
+        stream.startStream();
+    }
+
+    public void stopStream(){
+        stream.stopStream();
+        stream = null;
+    }
+
+    public void setIncomingCall(){
+        incomingCall = true;
     }
 
     public static void main(String[] args) throws IOException{
@@ -49,7 +87,7 @@ public class Client {
         int port = Integer.parseInt(args[1]);
         try {
             String msg;
-            myExternalAddress = InetAddress.getLocalHost().getHostAddress();
+            myExternalAddress = InetAddress.getLocalHost();
             InetAddress address = InetAddress.getByName(addr);
             socket = new Socket(address,port);
             inFromUser = new BufferedReader(new InputStreamReader(System.in));
@@ -70,6 +108,8 @@ public class Client {
         }catch (Exception e){
             e.printStackTrace();
         }finally {
+            if (stream != null)
+                stream.close();
             socket.close();
         }
         System.exit(0);
@@ -104,10 +144,14 @@ public class Client {
             }else
                 System.out.println("Invalid command. /call <user>");
         }
-        else if (sh.InvokeGetState() == State.IDLE && msg.startsWith("y"))
+        else if (sh.InvokeGetState() == State.IDLE && incomingCall && msg.startsWith("y")) {
+            incomingCall = false;
             sh.InvokeReceiveCall(toUsername);
-        else if (sh.InvokeGetState() == State.IDLE && msg.startsWith("n"))
+        }
+        else if (sh.InvokeGetState() == State.IDLE && incomingCall && msg.startsWith("n")) {
+            incomingCall = false;
             sh.InvokeCancel(toUsername);
+        }
         else if (sh.InvokeGetState() == State.INSESSION && msg.equals("/end"))
             sh.InvokeEndSession(toUsername);
         else

@@ -101,7 +101,7 @@ public class ClientInfo extends Thread{
                 }else if (msg.startsWith("SIP TRO ")){
                     String[] array = msg.split(" ");
                     tmp = server.GetUser(array[2]);
-                    msg = msg.replace(" "+array[2],"");
+                    msg = msg.replace(" "+array[2], " " + ipAddress.getHostAddress());
                     System.out.println(msg);
                 }else if (msg.startsWith("SIP ACK ")){
                     String[] array = msg.split(" ");

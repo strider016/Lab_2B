@@ -9,8 +9,10 @@ import java.util.concurrent.ThreadLocalRandom;
 public class StateIdle extends ClientState{
     @Override
     public ClientState StartCalling(String receiveUser,Client client) {
+        int port = generatePort();
         client.Send("SIP INVITE " + receiveUser + " " + client.getUsername() +
-                " #" + receiveUser + " " + client.getExternalIp() + " " + generatePort());
+                " #" + receiveUser + " " + client.getExternalIp().getHostAddress() + " " + port);
+        client.setPort(port);
         return new StateCalling();
     }
 

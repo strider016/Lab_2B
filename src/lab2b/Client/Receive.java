@@ -8,6 +8,7 @@ class Receive extends Thread{
     private final BufferedReader sin;
     private final Client client;
     private final StateHandler sh;
+
     public Receive(BufferedReader sin,StateHandler sh,Client client){
         this.sin = sin;
         this.sh = sh;
@@ -47,33 +48,47 @@ class Receive extends Thread{
                 array = msg.split(" ");
                 sendUsername = array[3];
                 client.setToUsername(sendUsername);
-                InetAddress ipAddress = null;
                 try{
-                    ipAddress = InetAddress.getByName(array[5]);
+                    client.setRemoteIpAddress(InetAddress.getByName(array[5]));
                 }catch (Exception e){
                     e.printStackTrace();
                 }
-                int port = Integer.parseInt(array[6]);
+                client.setPort(Integer.parseInt(array[6]));
+                client.setIncomingCall();
                 System.out.println("Incoming call");
                 System.out.print("Do you wanna accept? ");
                 break;
 
             case TRO:
+                array = msg.split(" ");
+                try {
+                    client.setRemoteIpAddress(InetAddress.getByName(array[2]));
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
                 sh.InvokeCallConfirmation(sendUsername);
+                client.setStream();
+                client.connectTo();
+                client.startStream();
                 System.out.println("The conversation has begun with " + sendUsername);
                 break;
 
             case ACK:
                 sh.InvokeCallAccepted();
+                client.setStream();
+                client.connectTo();
+                client.startStream();
                 System.out.println("The conversation has begun with " + sendUsername);
                 break;
 
             case BYE:
                 sh.InvokeAbortSession(sendUsername);
+                client.stopStream();
                 break;
 
             case OK:
                 sh.InvokeEndSessionConfirmation();
+                client.stopStream();
                 break;
 
             case CANCEL:
