@@ -154,6 +154,7 @@ public class ClientInfo extends Thread{
                 tmp = server.GetUser(array[2]);
                 msg = msg.replace(("#" + tmp.username), tmp.ipAddress.toString());
                 break;
+            //test
 
             case "TRO":
                 tmp = server.GetUser(array[2]);
