@@ -93,7 +93,6 @@ public class ClientInfo extends Thread{
                 break;
 
             case "sip":
-
                 //handles the SIP task e.g. invite, ack, tro
                 handleSIP(msg);
                 break;
@@ -142,10 +141,8 @@ public class ClientInfo extends Thread{
     }
 
     private void handleSIP(String msg){
-
         String command = extractSIP(msg);
         ClientInfo tmp = null;
-
         String[] array;
         array = msg.split(" ");
 
@@ -206,8 +203,6 @@ public class ClientInfo extends Thread{
         }
         return null;
     }
-
-
 
     private String getCommandList(){
         return "/help   \tGet list of all available commands.\n" +

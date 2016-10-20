@@ -24,6 +24,15 @@ public class Client {
     private MediaStream stream;
     private boolean incomingCall = false;
 
+    public static void main(String[] args) throws IOException{
+        if(args.length != 2) {
+            System.out.println("Usage: java Client <server_addr> <server_port>");
+            System.exit(0);
+        }
+        Client client = new Client();
+        client.Start(args);
+    }
+
     public String getUsername() {
         return username;
     }
@@ -73,13 +82,8 @@ public class Client {
         incomingCall = true;
     }
 
-    public static void main(String[] args) throws IOException{
-        if(args.length != 2) {
-            System.out.println("Usage: java Client <server_addr> <server_port>");
-            System.exit(0);
-        }
-        Client client = new Client();
-        client.Start(args);
+    public synchronized void Send(String msg) throws Exception{
+        toServer.writeBytes(msg + '\n');
     }
 
     private void Start(String[] args) throws IOException{
@@ -134,35 +138,27 @@ public class Client {
         System.out.println("Welcome " + username + "!");
     }
 
-    private void handleMessage(String msg) {
-        if (msg.startsWith("/call ")){
-            String[] tmp = msg.split(" ");
-            if (tmp.length == 2) {
-                toUsername = tmp[1];
-                receive.setSendUsername(toUsername);
-                sh.InvokeStartCalling(toUsername);
-            }else
-                System.out.println("Invalid command. /call <user>");
-        }
-        else if (sh.InvokeGetState() == State.IDLE && incomingCall && msg.startsWith("y")) {
-            incomingCall = false;
-            sh.InvokeReceiveCall(toUsername);
-        }
-        else if (sh.InvokeGetState() == State.IDLE && incomingCall && msg.startsWith("n")) {
-            incomingCall = false;
-            sh.InvokeCancel(toUsername);
-        }
-        else if (sh.InvokeGetState() == State.INSESSION && msg.equals("/end"))
+    private void handleMessage(String msg) throws Exception{
+        if (sh.InvokeGetState() == State.IDLE){
+            if (msg.startsWith("/call ")){
+                String[] tmp = msg.split(" ");
+                if (tmp.length == 2) {
+                    toUsername = tmp[1];
+                    receive.setSendUsername(toUsername);
+                    sh.InvokeStartCalling(toUsername);
+                }else
+                    System.out.println("Invalid command. /call <user>");
+            } else if (incomingCall && msg.startsWith("y")) {
+                if (msg.startsWith("y")){
+                    incomingCall = false;
+                    sh.InvokeReceiveCall(toUsername);
+                }else if (msg.startsWith("n")){
+                    incomingCall = false;
+                    sh.InvokeCancel(toUsername);
+                }
+            }
+        } else if (sh.InvokeGetState() == State.INSESSION && msg.equals("/end"))
             sh.InvokeEndSession(toUsername);
-        else
-            Send(msg);
-    }
-
-    public void Send(String msg){
-        try {
-            toServer.writeBytes(msg + '\n');
-        }catch (IOException e){
-            e.printStackTrace();
-        }
+        Send(msg);
     }
 }

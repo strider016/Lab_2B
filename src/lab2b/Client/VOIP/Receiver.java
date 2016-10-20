@@ -3,6 +3,10 @@ package lab2b.Client.VOIP;
 import java.net.*;
 import javax.sound.sampled.*;
 
+/**
+ * Based of the code provided by Johnny Panrike.
+ * Code is based of that one found in AudioStreamUDP.
+ */
 class Receiver extends Thread{
     private InetAddress remoteHost;
     private final DatagramSocket socket;
@@ -93,6 +97,17 @@ class Receiver extends Thread{
         }catch (Throwable ignored){}
     }
 
+    /**
+     * Thanks to: Paulo Levi.
+     * Lines can fail to open because they are already in use.
+     * Java sound uses OSS and some linuxes are using pulseaudio.
+     * OSS needs exclusive access to the line, and pulse audio
+     * highjacks it. Try to open another line.
+     * @param format
+     * @return a open line
+     * @throws IllegalStateException if it can't open a dataline for the
+     * audioformat.
+     */
     private SourceDataLine getSourceDataLine(AudioFormat format){
         Exception audioException = null;
         try {

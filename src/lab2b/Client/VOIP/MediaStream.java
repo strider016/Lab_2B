@@ -4,6 +4,10 @@ import java.io.*;
 import java.net.*;
 import javax.sound.sampled.*;
 
+/**
+ * Based of the code provided by Johnny Panrike.
+ * Code is based of that one found in AudioStreamUDP.
+ */
 public class MediaStream {
     static final int BUFFER_VS_FRAMES_RATIO = 16; //32
     static final boolean DEBUG= false;
@@ -18,7 +22,7 @@ public class MediaStream {
         receiverSocket.setSoTimeout(TIME_OUT);
         senderSocket = new DatagramSocket();
 
-        AudioFormat format = new AudioFormat(22050, 16, 1, true, true);
+        AudioFormat format = new AudioFormat(22050, 16, 1, true, true); //44100
         receiver = new Receiver(receiverSocket, format);
         sender = new Sender(senderSocket, format);
     }
@@ -29,8 +33,6 @@ public class MediaStream {
     }
 
     public synchronized void startStream(){
-        //receiver.startConversation();
-        //sender.startConversation();
         receiver.start();
         sender.start();
     }

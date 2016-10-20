@@ -12,11 +12,11 @@ class StateHandler {
 
     public State InvokeGetState(){return currentState.GetState();}
 
-    public void InvokeStartCalling(String receiveUser){
+    public void InvokeStartCalling(String receiveUser) throws Exception{
         currentState = currentState.StartCalling(receiveUser,client);
     }
 
-    public void InvokeReceiveCall(String msg){
+    public void InvokeReceiveCall(String msg) throws Exception{
         currentState = currentState.ReceiveCall(msg,client);
     }
 
@@ -24,15 +24,15 @@ class StateHandler {
         currentState = currentState.CallAccepted();
     }
 
-    public void InvokeCallConfirmation(String user){
+    public void InvokeCallConfirmation(String user) throws Exception{
         currentState = currentState.CallConfirmation(user,client);
     }
 
-    public void InvokeEndSession(String user){
+    public void InvokeEndSession(String user) throws Exception{
         currentState = currentState.EndSession(user,client);
     }
 
-    public void InvokeAbortSession(String user){
+    public void InvokeAbortSession(String user) throws Exception{
         currentState = currentState.AbortSession(user,client);
     }
 
@@ -40,7 +40,7 @@ class StateHandler {
         currentState = currentState.EndSessionConfirmation();
     }
 
-    public void InvokeCancel(String user){
+    public void InvokeCancel(String user) throws Exception{
         currentState = currentState.Cancel(user,client);
     }
 
