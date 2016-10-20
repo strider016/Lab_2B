@@ -35,6 +35,8 @@ public class ClientInfo extends Thread{
         return username;
     }
 
+    public String getHostAddress() { return ipAddress.getHostAddress(); }
+
     public void setUsername(String username) {
         this.username = username;
     }
@@ -91,41 +93,9 @@ public class ClientInfo extends Thread{
                 break;
 
             case "sip":
-                ClientInfo tmp = null;
-                System.out.println(msg);
-                if (msg.startsWith("SIP INVITE")) {
-                    String[] array = msg.split(" ");
-                    tmp = server.GetUser(array[2]);
-                    msg = msg.replace(("#" + tmp.username), tmp.ipAddress.toString());
-                    System.out.println(msg);
-                }else if (msg.startsWith("SIP TRO ")){
-                    String[] array = msg.split(" ");
-                    tmp = server.GetUser(array[2]);
-                    msg = msg.replace(" "+array[2], " " + ipAddress.getHostAddress());
-                    System.out.println(msg);
-                }else if (msg.startsWith("SIP ACK ")){
-                    String[] array = msg.split(" ");
-                    tmp = server.GetUser(array[2]);
-                    msg = msg.replace(" "+array[2],"");
-                    System.out.println(msg);
-                }else if (msg.startsWith("SIP BYE ")){
-                    String[] array = msg.split(" ");
-                    tmp = server.GetUser(array[2]);
-                    msg = msg.replace(" "+array[2],"");
-                    System.out.println(msg);
-                }else if (msg.startsWith("SIP 200")){
-                    String[] array = msg.split(" ");
-                    tmp = server.GetUser(array[3]);
-                    msg = msg.replace(" "+array[3],"");
-                    System.out.println(msg);
-                }else if (msg.startsWith("SIP CANCEL")){
-                    String[] array = msg.split(" ");
-                    tmp = server.GetUser(array[2]);
-                    msg = msg.replace(" "+array[2],"");
-                    System.out.println(msg);
-                }
-                assert tmp != null;
-                tmp.send(msg);
+
+                //handles the SIP task e.g. invite, ack, tro
+                handleSIP(msg);
                 break;
 
             case "/quit":
@@ -170,6 +140,74 @@ public class ClientInfo extends Thread{
             return tmp[1];
         return "invalid command";
     }
+
+    private void handleSIP(String msg){
+
+        String command = extractSIP(msg);
+        ClientInfo tmp = null;
+
+        String[] array;
+        array = msg.split(" ");
+
+        switch (command){
+            case "INVITE":
+                tmp = server.GetUser(array[2]);
+                msg = msg.replace(("#" + tmp.username), tmp.ipAddress.toString());
+                break;
+
+
+            case "TRO":
+                tmp = server.GetUser(array[2]);
+                msg = msg.replace(" "+array[2],"");
+                break;
+
+            case "ACK":
+                tmp = server.GetUser(array[2]);
+                msg = msg.replace(" "+array[2],"");
+                break;
+
+            case "BYE":
+                tmp = server.GetUser(array[2]);
+                msg = msg.replace(" "+array[2],"");
+                break;
+
+            case "200":
+                tmp = server.GetUser(array[3]);
+                msg = msg.replace(" "+array[3],"");
+                break;
+
+            case "CANCEL":
+                tmp = server.GetUser(array[2]);
+                msg = msg.replace(" "+array[2],"");
+                break;
+
+            default:
+                System.out.println("handle sip: invalid sip ");
+                break;
+        }
+
+        assert tmp != null;
+        tmp.send(msg);
+    }
+
+    private String extractSIP(String msg){
+        if (msg.toUpperCase().startsWith("SIP INVITE")){
+            return "INVITE";
+        }else if (msg.toUpperCase().startsWith("SIP TRO ")){
+            return "TRO";
+        }else if (msg.toUpperCase().startsWith("SIP ACK ")){
+            return "ACK";
+        }else if (msg.toUpperCase().startsWith("SIP BYE ")){
+            return "BYE";
+        }else if (msg.toUpperCase().startsWith("SIP 200")){
+            return "200";
+        }else if (msg.toUpperCase().startsWith("SIP CANCEL")){
+            return "CANCEL";
+        }
+        return null;
+    }
+
+
 
     private String getCommandList(){
         return "/help   \tGet list of all available commands.\n" +
