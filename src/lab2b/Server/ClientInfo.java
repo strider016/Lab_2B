@@ -155,7 +155,7 @@ public class ClientInfo extends Thread{
 
             case "TRO":
                 tmp = server.GetUser(array[2]);
-                msg = msg.replace(" "+array[2],"");
+                msg = msg.replace(" "+array[2]," " + ipAddress.getHostAddress());
                 break;
 
             case "ACK":
