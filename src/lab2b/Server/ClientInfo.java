@@ -15,6 +15,8 @@ public class ClientInfo extends Thread{
     private boolean run = true;
     private final Server server;
     private InetAddress ipAddress;
+    private boolean inSession;
+    private int inSessionWithID;
 
     public ClientInfo(Server server) {
         this.id = 0;
@@ -33,6 +35,10 @@ public class ClientInfo extends Thread{
 
     public String getUsername() {
         return username;
+    }
+
+    public int getID(){
+        return id;
     }
 
     public String getHostAddress() { return ipAddress.getHostAddress(); }
@@ -148,9 +154,18 @@ public class ClientInfo extends Thread{
 
         switch (command){
             case "INVITE":
-                tmp = server.GetUser(array[2]);
-                msg = msg.replace(("#" + tmp.username), tmp.ipAddress.toString());
-                break;
+                if(!this.inSession){
+                    this.inSession=true;
+                    tmp = server.GetUser(array[2]);
+                    this.inSessionWithID = tmp.getID();
+                    msg = msg.replace(("#" + tmp.username), tmp.ipAddress.toString());
+                    break;
+                }
+                else{
+                    tmp = server.GetUser(array[2]);
+                    msg = "BUSY";
+                    break;
+                }
 
 
             case "TRO":
@@ -164,10 +179,23 @@ public class ClientInfo extends Thread{
                 break;
 
             case "BYE":
-                tmp = server.GetUser(array[2]);
-                msg = msg.replace(" "+array[2],"");
-                break;
+                if(this.inSession){
+                    tmp = server.GetUser(array[2]);
 
+                    if(tmp.getID() == this.inSessionWithID){
+                        msg = msg.replace(" "+array[2],"");
+                        this.inSession = false;
+                    }
+                    else{
+                        msg = "WRONG ID";
+                    }
+                    break;
+                }
+                else {
+                    tmp = server.GetUser(array[2]);
+                    msg = "NOT IN SESSION";
+                    break;
+                }
             case "200":
                 tmp = server.GetUser(array[3]);
                 msg = msg.replace(" "+array[3],"");
