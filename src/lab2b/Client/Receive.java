@@ -101,6 +101,7 @@ class Receive extends Thread{
                     break;
 
                 case CANCEL:
+                    printCancelInfo(msg);
                     sh.InvokeResetState();
                     break;
 
@@ -125,5 +126,11 @@ class Receive extends Thread{
         else if (msg.startsWith("SIP CANCEL"))
             return SIPCommand.CANCEL;
         return SIPCommand.UNKNOWN;
+    }
+
+    private void printCancelInfo(String msg){
+        String[] split = msg.split("SIP CANCEL");
+        String info = split[2];
+        System.out.println(info);
     }
 }

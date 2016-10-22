@@ -37,10 +37,6 @@ public class ClientInfo extends Thread{
         return username;
     }
 
-    public int getID(){
-        return id;
-    }
-
     public String getHostAddress() { return ipAddress.getHostAddress(); }
 
     public void setUsername(String username) {
@@ -154,18 +150,22 @@ public class ClientInfo extends Thread{
 
         switch (command){
             case "INVITE":
+                tmp = server.GetUser(array[2]);
+
                 if(!this.inSession){
-                    this.inSession=true;
-                    tmp = server.GetUser(array[2]);
-                    this.inSessionWithID = tmp.getID();
-                    msg = msg.replace(("#" + tmp.username), tmp.ipAddress.toString());
-                    break;
+                    if(!tmp.inSession){
+                        this.inSession=true;
+                        tmp.inSession = true;
+
+                        this.inSessionWithID = tmp.id;
+                        tmp.inSessionWithID = this.id;
+
+                        msg = msg.replace(("#" + tmp.username), tmp.ipAddress.toString());
+                        break;
+                    }
                 }
-                else{
-                    tmp = server.GetUser(array[2]);
-                    msg = "BUSY";
-                    break;
-                }
+                send("SIP CANCEL BUSY");
+                break;
 
 
             case "TRO":
@@ -179,23 +179,27 @@ public class ClientInfo extends Thread{
                 break;
 
             case "BYE":
-                if(this.inSession){
-                    tmp = server.GetUser(array[2]);
+                tmp = server.GetUser(array[2]);
 
-                    if(tmp.getID() == this.inSessionWithID){
-                        msg = msg.replace(" "+array[2],"");
-                        this.inSession = false;
+                if(this.inSession){
+                    if(tmp.inSession){
+                        if(tmp.id == this.inSessionWithID && tmp.inSessionWithID == this.id){
+                            msg = msg.replace(" "+array[2],"");
+                            this.inSession = false;
+                            tmp.inSession = false;
+                            break;
+                        }
                     }
                     else{
-                        msg = "WRONG ID";
+                        send("SIP CANCEL RECEIVER NOT IN SESSION");
+                        break;
                     }
-                    break;
                 }
                 else {
-                    tmp = server.GetUser(array[2]);
-                    msg = "NOT IN SESSION";
-                    break;
+                    send("SIP CANCEL NOT IN SESSION");
                 }
+                break;
+
             case "200":
                 tmp = server.GetUser(array[3]);
                 msg = msg.replace(" "+array[3],"");
