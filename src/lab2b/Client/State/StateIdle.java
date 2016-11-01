@@ -7,6 +7,10 @@ import java.net.ServerSocket;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class StateIdle extends ClientState{
+    public StateIdle(){
+        super("You are now in idle, there should not be a timeout.");
+    }
+
     @Override
     public ClientState StartCalling(String receiveUser,Client client) throws Exception{
         int port = generatePort();

@@ -1,12 +1,10 @@
 package lab2b.Client;
 
+import lab2b.Client.State.State;
+
 import java.io.BufferedReader;
 import java.net.InetAddress;
 
-/**
- * Based of the code provided by Johnny Panrike.
- * Code is based of that one found in AudioStreamUDP.
- */
 class Receive extends Thread{
     private String sendUsername;
     private final BufferedReader sin;
@@ -54,22 +52,24 @@ class Receive extends Thread{
         try {
             switch (type) {
                 case INVITE:
-                    array = msg.split(" ");
-                    sendUsername = array[3];
-                    client.setToUsername(sendUsername);
-                    try {
-                        client.setRemoteIpAddress(InetAddress.getByName(array[5]));
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    if (sh.InvokeGetState() == lab2b.Client.State.State.IDLE) {
+                        array = msg.split(" ");
+                        sendUsername = array[3];
+                        client.setToUsername(sendUsername);
+                        try {
+                            client.setRemoteIpAddress(InetAddress.getByName(array[5]));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        client.setPort(Integer.parseInt(array[6]));
+                        client.setIncomingCall();
+                        System.out.println("Incoming call");
+                        System.out.print("Do you wanna accept? ");
                     }
-                    client.setPort(Integer.parseInt(array[6]));
-                    client.setIncomingCall();
-                    System.out.println("Incoming call");
-                    System.out.print("Do you wanna accept? ");
                     break;
 
                 case TRO:
-                    array = msg.split(" ");
+                    /*array = msg.split(" ");
                     try {
                         client.setRemoteIpAddress(InetAddress.getByName(array[2]));
                     } catch (Exception e) {
@@ -80,32 +80,36 @@ class Receive extends Thread{
                     client.connectTo();
                     client.startStream();
                     System.out.println("The conversation has begun with " + sendUsername);
+                    */
+                    sh.InvokeCallConfirmation(sendUsername,msg);
                     break;
 
                 case ACK:
-                    sh.InvokeCallAccepted();
-                    client.setStream();
+                    sh.InvokeCallAccepted(sendUsername);
+                    /*client.setStream();
                     client.connectTo();
                     client.startStream();
                     System.out.println("The conversation has begun with " + sendUsername);
+                    */
                     break;
 
                 case BYE:
                     sh.InvokeAbortSession(sendUsername);
-                    client.stopStream();
+                    //client.stopStream();
                     break;
 
                 case OK:
                     sh.InvokeEndSessionConfirmation();
-                    client.stopStream();
+                    //client.stopStream();
                     break;
 
                 case CANCEL:
-                    printCancelInfo(msg);
-                    sh.InvokeResetState();
+                    //printCancelInfo(msg);
+                    sh.InvokeResetState(msg);
                     break;
 
                 default:
+                    sh.InvokeResetState();
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -129,8 +133,10 @@ class Receive extends Thread{
     }
 
     private void printCancelInfo(String msg){
-        String[] split = msg.split("SIP CANCEL");
-        String info = split[2];
-        System.out.println(info);
+        if (msg.contains("SIP CANCEL")){
+            String[] split = msg.split("SIP CANCEL");
+            if (split.length==2)
+                System.out.println(split[1]);
+        }
     }
 }

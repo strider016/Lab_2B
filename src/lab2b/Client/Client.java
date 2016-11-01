@@ -159,6 +159,7 @@ public class Client {
             }
         } else if (sh.InvokeGetState() == State.INSESSION && msg.equals("/end"))
             sh.InvokeEndSession(toUsername);
-        Send(msg);
+        else
+            Send(msg);
     }
 }

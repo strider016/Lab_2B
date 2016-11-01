@@ -20,12 +20,12 @@ class StateHandler {
         currentState = currentState.ReceiveCall(msg,client);
     }
 
-    public void InvokeCallAccepted(){
-        currentState = currentState.CallAccepted();
+    public void InvokeCallAccepted(String user){
+        currentState = currentState.CallAccepted(user,client);
     }
 
-    public void InvokeCallConfirmation(String user) throws Exception{
-        currentState = currentState.CallConfirmation(user,client);
+    public void InvokeCallConfirmation(String user,String msg) throws Exception{
+        currentState = currentState.CallConfirmation(user,client,msg);
     }
 
     public void InvokeEndSession(String user) throws Exception{
@@ -46,5 +46,9 @@ class StateHandler {
 
     public void InvokeResetState(){
         currentState = currentState.ResetState();
+    }
+
+    public void InvokeResetState(String msg){
+        currentState = currentState.ResetState(msg);
     }
 }

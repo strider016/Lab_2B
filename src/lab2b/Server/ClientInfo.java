@@ -47,6 +47,7 @@ public class ClientInfo extends Thread{
         try {
             while (run){
                 String msg = reader.readLine();
+                System.out.println(username + ": " + msg);
                 if(msg.startsWith("/") || msg.startsWith("SIP"))
                     handleCommand(msg);
                 else
@@ -233,7 +234,7 @@ public class ClientInfo extends Thread{
         }else if (msg.toUpperCase().startsWith("SIP CANCEL")){
             return "CANCEL";
         }
-        return null;
+        return "UNKNOWN";
     }
 
     private String getCommandList(){
