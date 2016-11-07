@@ -3,7 +3,11 @@ package lab2b.Client.State;
 public class StateEnding extends ClientState{
     @Override
     public ClientState EndSessionConfirmation() {
-        return new StateIdle();
+        try {
+            return new StateIdle();
+        }catch (Exception e){
+            return ResetState();
+        }
     }
 
     @Override

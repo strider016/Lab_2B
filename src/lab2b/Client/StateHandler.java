@@ -2,7 +2,7 @@ package lab2b.Client;
 
 import lab2b.Client.State.*;
 
-class StateHandler {
+public class StateHandler {
     private ClientState currentState;
     private final Client client;
     public StateHandler(Client client){

@@ -1,7 +1,5 @@
 package lab2b.Client;
 
-import lab2b.Client.State.State;
-
 import java.io.BufferedReader;
 import java.net.InetAddress;
 
@@ -69,42 +67,22 @@ class Receive extends Thread{
                     break;
 
                 case TRO:
-                    /*array = msg.split(" ");
-                    try {
-                        client.setRemoteIpAddress(InetAddress.getByName(array[2]));
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    sh.InvokeCallConfirmation(sendUsername);
-                    client.setStream();
-                    client.connectTo();
-                    client.startStream();
-                    System.out.println("The conversation has begun with " + sendUsername);
-                    */
                     sh.InvokeCallConfirmation(sendUsername,msg);
                     break;
 
                 case ACK:
                     sh.InvokeCallAccepted(sendUsername);
-                    /*client.setStream();
-                    client.connectTo();
-                    client.startStream();
-                    System.out.println("The conversation has begun with " + sendUsername);
-                    */
                     break;
 
                 case BYE:
                     sh.InvokeAbortSession(sendUsername);
-                    //client.stopStream();
                     break;
 
                 case OK:
                     sh.InvokeEndSessionConfirmation();
-                    //client.stopStream();
                     break;
 
                 case CANCEL:
-                    //printCancelInfo(msg);
                     sh.InvokeResetState(msg);
                     break;
 
@@ -130,13 +108,5 @@ class Receive extends Thread{
         else if (msg.startsWith("SIP CANCEL"))
             return SIPCommand.CANCEL;
         return SIPCommand.UNKNOWN;
-    }
-
-    private void printCancelInfo(String msg){
-        if (msg.contains("SIP CANCEL")){
-            String[] split = msg.split("SIP CANCEL");
-            if (split.length==2)
-                System.out.println(split[1]);
-        }
     }
 }

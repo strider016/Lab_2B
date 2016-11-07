@@ -82,9 +82,9 @@ public class ClientInfo extends Thread{
             case "/nick":
                 if (server.GetUser(msg) == null) {
                     setUsername(msg);
-                    send("OK Nickname changed");
+                    send("OK Nickname changed.\n");
                 }else
-                    send("Nickname in use");
+                    send("Nickname in use.\n");
                 break;
 
             case "/who":
@@ -102,12 +102,11 @@ public class ClientInfo extends Thread{
 
             case "/quit":
                 run = false;
-                send("You have been disconnected.");
-                server.removeClient(id);
+                send("You have been disconnected.\n");
                 break;
 
             default:
-                send("Invalid command");
+                send("Invalid command\n");
         }
     }
 
@@ -187,7 +186,9 @@ public class ClientInfo extends Thread{
                         if(tmp.id == this.inSessionWithID && tmp.inSessionWithID == this.id){
                             msg = msg.replace(" "+array[2],"");
                             this.inSession = false;
+                            this.inSessionWithID = -1;
                             tmp.inSession = false;
+                            tmp.inSessionWithID = -1;
                             break;
                         }
                     }
@@ -209,6 +210,22 @@ public class ClientInfo extends Thread{
             case "CANCEL":
                 tmp = server.GetUser(array[2]);
                 msg = msg.replace(" "+array[2],"");
+                break;
+
+            case "ABORT":
+                tmp = server.GetUser(inSessionWithID);
+                if(this.inSession) {
+                    if (tmp.inSession) {
+                        if (tmp.id == this.inSessionWithID && tmp.inSessionWithID == this.id) {
+                            this.inSession = false;
+                            tmp.inSession = false;
+                            break;
+                        } else {
+                            this.inSession = false;
+                            inSessionWithID = -1;
+                        }
+                    }
+                }
                 break;
 
             default:
@@ -233,6 +250,8 @@ public class ClientInfo extends Thread{
             return "200";
         }else if (msg.toUpperCase().startsWith("SIP CANCEL")){
             return "CANCEL";
+        }else if (msg.toUpperCase().startsWith("SIP ABORT")){
+            return "ABORT";
         }
         return "UNKNOWN";
     }

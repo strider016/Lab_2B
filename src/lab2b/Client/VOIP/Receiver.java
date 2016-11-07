@@ -44,7 +44,8 @@ class Receiver extends Thread{
 
             line.start();
             int packets = 0;
-            System.out.println("Reciving from: " + remoteHost);
+            if (MediaStream.RUNNING_DEBUG)
+                System.out.println("Reciving from: " + remoteHost);
             while (inConversation) {
                 socket.receive(packet);
                 if (remoteHost.equals(packet.getAddress())) {

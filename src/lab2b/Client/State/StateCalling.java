@@ -7,18 +7,22 @@ import java.net.InetAddress;
 public class StateCalling extends ClientState{
     @Override
     public ClientState CallConfirmation(String user,Client client,String msg) throws Exception{
-        String[] array = msg.split(" ");
         try {
-            client.setRemoteIpAddress(InetAddress.getByName(array[2]));
+            String[] array = msg.split(" ");
+            try {
+                client.setRemoteIpAddress(InetAddress.getByName(array[2]));
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+            client.setStream();
+            client.connectTo();
+            client.startStream();
+            System.out.println("The conversation har begun with user: " + user);
+            client.Send("SIP ACK " + user);
+            return new StateInSession();
         }catch (Exception e){
-            e.printStackTrace();
+            return ResetState();
         }
-        client.setStream();
-        client.connectTo();
-        client.startStream();
-        System.out.println("The conversation har begun with " + user);
-        client.Send("SIP ACK " + user);
-        return new StateInSession();
     }
 
     @Override

@@ -42,7 +42,8 @@ class Sender extends Thread{
 
             line.start();
             int packets = 0;
-            System.out.println("Sending to: " + remoteAddress + " " +remotePort);
+            if (MediaStream.RUNNING_DEBUG)
+                System.out.println("Sending to: " + remoteAddress + " " +remotePort);
             while (inConversation) {
                 if ((numBytesRead = line.read(data,0,bufferLengthInBytes)) == -1){
                     break;

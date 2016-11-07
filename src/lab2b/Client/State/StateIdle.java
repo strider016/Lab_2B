@@ -13,17 +13,25 @@ public class StateIdle extends ClientState{
 
     @Override
     public ClientState StartCalling(String receiveUser,Client client) throws Exception{
-        int port = generatePort();
-        client.Send("SIP INVITE " + receiveUser + " " + client.getUsername() +
-                " #" + receiveUser + " " + client.getExternalIp().getHostAddress() + " " + port);
-        client.setPort(port);
-        return new StateCalling();
+        try {
+            int port = generatePort();
+            client.Send("SIP INVITE " + receiveUser + " " + client.getUsername() +
+                    " #" + receiveUser + " " + client.getExternalIp().getHostAddress() + " " + port);
+            client.setPort(port);
+            return new StateCalling();
+        }catch (Exception e){
+            return ResetState();
+        }
     }
 
     @Override
     public ClientState ReceiveCall(String msg,Client client) throws Exception{
-        client.Send("SIP TRO " + msg);
-        return new StateCallback();
+        try {
+            client.Send("SIP TRO " + msg);
+            return new StateCallback();
+        }catch (Exception e){
+            return ResetState();
+        }
     }
 
     @Override

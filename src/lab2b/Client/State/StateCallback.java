@@ -5,11 +5,15 @@ import lab2b.Client.Client;
 public class StateCallback extends ClientState{
     @Override
     public ClientState CallAccepted(String user,Client client) {
-        client.setStream();
-        client.connectTo();
-        client.startStream();
-        System.out.println("The conversation has begun with + " + user);
-        return new StateInSession();
+        try {
+            client.setStream();
+            client.connectTo();
+            client.startStream();
+            System.out.println("The conversation has begun with + " + user);
+            return new StateInSession();
+        }catch (Exception e){
+            return ResetState();
+        }
     }
 
     @Override

@@ -1,5 +1,7 @@
 package lab2b.Client.VOIP;
 
+import lab2b.Client.Client;
+
 import java.io.*;
 import java.net.*;
 import javax.sound.sampled.*;
@@ -10,7 +12,8 @@ import javax.sound.sampled.*;
  */
 public class MediaStream {
     static final int BUFFER_VS_FRAMES_RATIO = 16; //32
-    static final boolean DEBUG= false;
+    static final boolean DEBUG = false;
+    static boolean RUNNING_DEBUG;
     private static final int TIME_OUT = 5000;
 
     private Receiver receiver = null;
@@ -18,6 +21,7 @@ public class MediaStream {
     private DatagramSocket receiverSocket,senderSocket;
 
     public MediaStream(int port) throws IOException{
+        RUNNING_DEBUG = Client.StaticGetDebug();
         receiverSocket = new DatagramSocket(port);
         receiverSocket.setSoTimeout(TIME_OUT);
         senderSocket = new DatagramSocket();

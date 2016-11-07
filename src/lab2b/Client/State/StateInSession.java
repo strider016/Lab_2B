@@ -8,16 +8,24 @@ public class StateInSession extends ClientState{
     }
     @Override
     public ClientState EndSession(String user,Client client) throws Exception{
-        client.stopStream();
-        client.Send("SIP BYE " + user);
-        return new StateEnding();
+        try {
+            client.stopStream();
+            client.Send("SIP BYE " + user);
+            return new StateEnding();
+        }catch (Exception e){
+            return ResetState();
+        }
     }
 
     @Override
     public ClientState AbortSession(String user,Client client) throws Exception{
-        client.stopStream();
-        client.Send("SIP 200 OK " + user);
-        return new StateIdle();
+        try {
+            client.stopStream();
+            client.Send("SIP 200 OK " + user);
+            return new StateIdle();
+        }catch (Exception e){
+            return ResetState();
+        }
     }
 
     @Override

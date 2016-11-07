@@ -72,4 +72,8 @@ class Server {
         }
         return null;
     }
+
+    public synchronized ClientInfo GetUser(int id){
+        return clients.get(id);
+    }
 }
