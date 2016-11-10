@@ -60,6 +60,10 @@ public class Client {
         debug = bool;
     }
 
+    public static void StaticResetState(){
+
+    }
+
     public String getUsername() {
         return username;
     }
@@ -150,8 +154,6 @@ public class Client {
             }
         }catch (SocketException e){
             System.out.println("Server is unreachable.");
-        }catch (IOException e){
-            System.out.println(e.getMessage());
         }catch (Exception e){
             //e.printStackTrace();
             System.out.println(e.getMessage());

@@ -1,5 +1,7 @@
 package lab2b.Client.VOIP;
 
+import lab2b.Client.Client;
+
 import java.net.*;
 import javax.sound.sampled.*;
 
@@ -88,6 +90,7 @@ class Receiver extends Thread{
                 line.stop();
                 line.close();
             }
+            Client.ResetState();
         }catch (Exception ignored){}
     }
 
@@ -104,7 +107,7 @@ class Receiver extends Thread{
      * Java sound uses OSS and some linuxes are using pulseaudio.
      * OSS needs exclusive access to the line, and pulse audio
      * highjacks it. Try to open another line.
-     * @param format
+     * @param format of audio.
      * @return a open line
      * @throws IllegalStateException if it can't open a dataline for the
      * audioformat.
