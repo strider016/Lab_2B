@@ -15,7 +15,7 @@ public class ClientInfo extends Thread{
     private boolean run = true;
     private final Server server;
     private InetAddress ipAddress;
-    private boolean inSession;
+    private boolean inSession = false;
     private int inSessionWithID;
 
     public ClientInfo(Server server) {
@@ -91,6 +91,10 @@ public class ClientInfo extends Thread{
                 send(server.getAllClientNames(id));
                 break;
 
+            case "/error":
+                //Get list of error
+                break;
+
             case "/whoami":
                 send(username);
                 break;
@@ -127,6 +131,8 @@ public class ClientInfo extends Thread{
             return "sip";
         else if (msg.toLowerCase().equals("/quit"))
             return "/quit";
+        else if (msg.toLowerCase().equals("/error"))
+            return "/error";
         else
             return "Invalid command";
     }
@@ -152,8 +158,8 @@ public class ClientInfo extends Thread{
             case "INVITE":
                 tmp = server.GetUser(array[2]);
 
-                if(!this.inSession){
-                    if(!tmp.inSession){
+                if(this.inSession == false){
+                    if(tmp.inSession == false){
                         this.inSession=true;
                         tmp.inSession = true;
 
@@ -182,17 +188,17 @@ public class ClientInfo extends Thread{
                 tmp = server.GetUser(array[2]);
 
                 if(this.inSession){
-                    if(tmp.inSession){
-                        if(tmp.id == this.inSessionWithID && tmp.inSessionWithID == this.id){
-                            msg = msg.replace(" "+array[2],"");
-                            this.inSession = false;
-                            this.inSessionWithID = -1;
-                            tmp.inSession = false;
-                            tmp.inSessionWithID = -1;
-                            break;
+                        if(tmp.inSession){
+                            if(tmp.id == this.inSessionWithID && tmp.inSessionWithID == this.id){
+                                msg = msg.replace(" "+array[2],"");
+                                this.inSession = false;
+                                this.inSessionWithID = -1;
+                                tmp.inSession = false;
+                                tmp.inSessionWithID = -1;
+                                break;
+                            }
                         }
-                    }
-                    else{
+                        else{
                         send("SIP CANCEL RECEIVER NOT IN SESSION");
                         break;
                     }
@@ -254,6 +260,10 @@ public class ClientInfo extends Thread{
             return "ABORT";
         }
         return "UNKNOWN";
+    }
+
+    private void errorList(){
+
     }
 
     private String getCommandList(){
