@@ -153,7 +153,8 @@ public class Client {
         }catch (IOException e){
             System.out.println(e.getMessage());
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
+            System.out.println(e.getMessage());
         }finally {
             if (stream != null)
                 stream.close();

@@ -56,10 +56,12 @@ public class ClientInfo extends Thread{
         }catch(NullPointerException ignored){
 
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }
-        server.removeClient(id);
-        System.out.println(id + " - " + username + ": has disconnected.");
+        finally {
+            server.removeClient(id);
+            System.out.println(id + " - " + username + ": has disconnected.");
+        }
     }
 
     public void send(String msg){

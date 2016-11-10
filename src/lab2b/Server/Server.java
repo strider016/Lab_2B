@@ -1,5 +1,7 @@
 package lab2b.Server;
 
+import com.sun.org.apache.xpath.internal.SourceTree;
+
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
@@ -30,6 +32,7 @@ class Server {
             }
         } catch (Exception e){
             e.printStackTrace();
+
         }
     }
 
