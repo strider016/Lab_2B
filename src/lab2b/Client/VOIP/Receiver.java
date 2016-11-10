@@ -45,6 +45,7 @@ class Receiver extends Thread{
             int numBytesRead ;
 
             line.start();
+            //noinspection UnusedAssignment
             int packets = 0;
             if (MediaStream.RUNNING_DEBUG)
                 System.out.println("Reciving from: " + remoteHost);

@@ -41,6 +41,7 @@ class Sender extends Thread{
             int numBytesRead;
 
             line.start();
+            //noinspection UnusedAssignment
             int packets = 0;
             if (MediaStream.RUNNING_DEBUG)
                 System.out.println("Sending to: " + remoteAddress + " " +remotePort);

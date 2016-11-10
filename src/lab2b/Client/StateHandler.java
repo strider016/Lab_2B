@@ -2,7 +2,7 @@ package lab2b.Client;
 
 import lab2b.Client.State.*;
 
-public class StateHandler {
+class StateHandler {
     private ClientState currentState;
     private final Client client;
     public StateHandler(Client client){
@@ -12,11 +12,11 @@ public class StateHandler {
 
     public State InvokeGetState(){return currentState.GetState();}
 
-    public void InvokeStartCalling(String receiveUser) throws Exception{
+    public void InvokeStartCalling(String receiveUser) {
         currentState = currentState.StartCalling(receiveUser,client);
     }
 
-    public void InvokeReceiveCall(String msg) throws Exception{
+    public void InvokeReceiveCall(String msg) {
         currentState = currentState.ReceiveCall(msg,client);
     }
 
@@ -24,15 +24,15 @@ public class StateHandler {
         currentState = currentState.CallAccepted(user,client);
     }
 
-    public void InvokeCallConfirmation(String user,String msg) throws Exception{
+    public void InvokeCallConfirmation(String user,String msg) {
         currentState = currentState.CallConfirmation(user,client,msg);
     }
 
-    public void InvokeEndSession(String user) throws Exception{
+    public void InvokeEndSession(String user) {
         currentState = currentState.EndSession(user,client);
     }
 
-    public void InvokeAbortSession(String user) throws Exception{
+    public void InvokeAbortSession(String user) {
         currentState = currentState.AbortSession(user,client);
     }
 
@@ -40,7 +40,7 @@ public class StateHandler {
         currentState = currentState.EndSessionConfirmation();
     }
 
-    public void InvokeCancel(String user) throws Exception{
+    public void InvokeCancel(String user) {
         currentState = currentState.Cancel(user,client);
     }
 

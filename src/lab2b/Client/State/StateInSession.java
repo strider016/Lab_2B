@@ -7,7 +7,7 @@ public class StateInSession extends ClientState{
         super("Currently in session.");
     }
     @Override
-    public ClientState EndSession(String user,Client client) throws Exception{
+    public ClientState EndSession(String user,Client client) {
         try {
             client.stopStream();
             client.Send("SIP BYE " + user);
@@ -18,7 +18,7 @@ public class StateInSession extends ClientState{
     }
 
     @Override
-    public ClientState AbortSession(String user,Client client) throws Exception{
+    public ClientState AbortSession(String user,Client client) {
         try {
             client.stopStream();
             client.Send("SIP 200 OK " + user);

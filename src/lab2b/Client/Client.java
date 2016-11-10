@@ -40,9 +40,9 @@ public class Client {
         return client.getState();
     }
 
-    public static void StaticSend(String msg){
+    public static void StaticSend(){
         try {
-            client.Send(msg);
+            client.Send("SIP ABORT");
         }catch (Exception e){
             System.out.println("Something went wrong.");
         }
@@ -54,14 +54,6 @@ public class Client {
 
     public static boolean StaticGetDebug(){
         return client.getDebug();
-    }
-
-    public static void StaticSetDebug(boolean bool){
-        debug = bool;
-    }
-
-    public static void StaticResetState(){
-
     }
 
     public String getUsername() {
@@ -113,11 +105,11 @@ public class Client {
         incomingCall = true;
     }
 
-    public void setDebug(boolean bool){
-        StaticSetDebug(bool);
+    private void setDebug(boolean bool){
+        debug=bool;
     }
 
-    public boolean getDebug(){
+    private boolean getDebug(){
         return debug;
     }
 

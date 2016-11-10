@@ -12,7 +12,7 @@ public class StateIdle extends ClientState{
     }
 
     @Override
-    public ClientState StartCalling(String receiveUser,Client client) throws Exception{
+    public ClientState StartCalling(String receiveUser,Client client) {
         try {
             int port = generatePort();
             client.Send("SIP INVITE " + receiveUser + " " + client.getUsername() +
@@ -25,7 +25,7 @@ public class StateIdle extends ClientState{
     }
 
     @Override
-    public ClientState ReceiveCall(String msg,Client client) throws Exception{
+    public ClientState ReceiveCall(String msg,Client client) {
         try {
             client.Send("SIP TRO " + msg);
             return new StateCallback();

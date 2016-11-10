@@ -37,8 +37,6 @@ public class ClientInfo extends Thread{
         return username;
     }
 
-    public String getHostAddress() { return ipAddress.getHostAddress(); }
-
     public void setUsername(String username) {
         this.username = username;
     }
@@ -53,9 +51,7 @@ public class ClientInfo extends Thread{
                 else
                     handleMessage(msg);
             }
-        }catch(NullPointerException ignored){
-
-        }catch (Exception e){
+        }catch (Exception ignored){
             //e.printStackTrace();
         }
         finally {
@@ -160,8 +156,8 @@ public class ClientInfo extends Thread{
             case "INVITE":
                 tmp = server.GetUser(array[2]);
 
-                if(this.inSession == false){
-                    if(tmp.inSession == false){
+                if(!this.inSession){
+                    if(!tmp.inSession){
                         this.inSession=true;
                         tmp.inSession = true;
 
@@ -262,10 +258,6 @@ public class ClientInfo extends Thread{
             return "ABORT";
         }
         return "UNKNOWN";
-    }
-
-    private void errorList(){
-
     }
 
     private String getCommandList(){

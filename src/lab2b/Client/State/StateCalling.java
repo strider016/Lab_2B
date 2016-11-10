@@ -6,7 +6,7 @@ import java.net.InetAddress;
 
 public class StateCalling extends ClientState{
     @Override
-    public ClientState CallConfirmation(String user,Client client,String msg) throws Exception{
+    public ClientState CallConfirmation(String user,Client client,String msg) {
         try {
             String[] array = msg.split(" ");
             try {

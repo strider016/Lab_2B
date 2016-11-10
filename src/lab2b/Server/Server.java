@@ -1,7 +1,5 @@
 package lab2b.Server;
 
-import com.sun.org.apache.xpath.internal.SourceTree;
-
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
@@ -52,15 +50,6 @@ class Server {
             }
         }
     }
-
-    public synchronized String getIPwithID(int id){
-
-        if(clients.containsKey(id)){
-            return clients.get(id).getHostAddress();
-        }
-        else return null;
-    }
-
 
     public synchronized String getAllClientNames(int id){
         StringBuilder sb = new StringBuilder();
