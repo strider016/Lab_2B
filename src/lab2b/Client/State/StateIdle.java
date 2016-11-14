@@ -18,6 +18,7 @@ public class StateIdle extends ClientState{
             client.Send("SIP INVITE " + receiveUser + " " + client.getUsername() +
                     " #" + receiveUser + " " + client.getExternalIp().getHostAddress() + " " + port);
             client.setPort(port);
+            System.out.println("Ringing...");
             return new StateCalling();
         }catch (Exception e){
             return ResetState();

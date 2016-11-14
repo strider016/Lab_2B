@@ -76,7 +76,11 @@ public class Client {
         try {
             this.stream = new MediaStream(port);
         }catch (IOException e){
-            e.printStackTrace();
+            System.out.println("Something bad happened.\n"+e.getMessage());
+            try {
+                Send("SIP ABORT");
+            }catch (Exception ignored){}
+
         }
     }
 
@@ -97,16 +101,14 @@ public class Client {
     }
 
     public void stopStream(){
-        stream.stopStream();
-        stream = null;
+        if (stream != null) {
+            stream.stopStream();
+            stream = null;
+        }
     }
 
     public void setIncomingCall(){
         incomingCall = true;
-    }
-
-    private void setDebug(boolean bool){
-        debug=bool;
     }
 
     private boolean getDebug(){
@@ -206,10 +208,11 @@ public class Client {
             return;
         }
         if (msg.startsWith("/debug")){
+            debug = !debug;
             if (getDebug())
-                setDebug(false);
+                System.out.println("Debugging has begun.");
             else if (!getDebug())
-                setDebug(true);
+                System.out.println("Debugging has ended.");
             return;
         }
         Send(msg);

@@ -47,6 +47,8 @@ class Receive extends Thread{
     private void handleMessage(String msg){
         SIPCommand type = getSIPCommand(msg.toUpperCase());
         String[] array;
+        if (Client.StaticGetDebug())
+            System.out.println(msg);
         try {
             switch (type) {
                 case INVITE:
@@ -84,6 +86,7 @@ class Receive extends Thread{
 
                 case CANCEL:
                     sh.InvokeResetState(msg);
+                    client.stopStream();
                     break;
 
                 default:

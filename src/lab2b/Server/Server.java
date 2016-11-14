@@ -30,7 +30,6 @@ class Server {
             }
         } catch (Exception e){
             e.printStackTrace();
-
         }
     }
 
@@ -57,15 +56,22 @@ class Server {
         return sb.toString();
     }
 
-    public synchronized ClientInfo GetUser(String username){
-        for (Map.Entry<Integer,ClientInfo> entry: clients.entrySet()) {
-            if (entry.getValue().getUsername().equals(username))
-                return entry.getValue();
-        }
-        return null;
+    public synchronized ClientInfo GetUser(String username) {
+        if (UserExist(username))
+            for (Map.Entry<Integer, ClientInfo> entry : clients.entrySet())
+                if (entry.getValue().getUsername().equals(username))
+                    return entry.getValue();
+        return new ClientInfo(this);
     }
 
     public synchronized ClientInfo GetUser(int id){
         return clients.get(id);
+    }
+
+    public synchronized boolean UserExist(String username){
+        for (Map.Entry<Integer,ClientInfo> entry : clients.entrySet())
+            if (entry.getValue().getUsername().equals(username))
+                return true;
+        return false;
     }
 }

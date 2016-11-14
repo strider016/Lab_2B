@@ -17,11 +17,13 @@ public class ClientInfo extends Thread{
     private InetAddress ipAddress;
     private boolean inSession = false;
     private int inSessionWithID;
+    private boolean User;
 
     public ClientInfo(Server server) {
         this.id = 0;
         this.server = server;
         username = "";
+        User = false;
     }
 
     public ClientInfo(Socket socket,int id,Server server) throws IOException {
@@ -31,6 +33,7 @@ public class ClientInfo extends Thread{
         reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         ipAddress = socket.getInetAddress();
         username = "";
+        User = true;
     }
 
     public String getUsername() {
@@ -43,16 +46,19 @@ public class ClientInfo extends Thread{
 
     public void run(){
         try {
-            while (run){
+            while (run) {
                 String msg = reader.readLine();
-                System.out.println(username + ": " + msg);
-                if(msg.startsWith("/") || msg.startsWith("SIP"))
-                    handleCommand(msg);
-                else
-                    handleMessage(msg);
+                if (msg != null) {
+                    System.out.println(username + ": " + msg);
+                    if (msg.startsWith("/") || msg.startsWith("SIP"))
+                        handleCommand(msg);
+                    else
+                        handleMessage(msg);
+                }
             }
-        }catch (Exception ignored){
-            //e.printStackTrace();
+        }catch (NullPointerException ignored){
+        }catch (Exception e){
+            e.printStackTrace();
         }
         finally {
             server.removeClient(id);
@@ -78,7 +84,7 @@ public class ClientInfo extends Thread{
                 break;
 
             case "/nick":
-                if (server.GetUser(msg) == null) {
+                if (!server.UserExist(msg)) {
                     setUsername(msg);
                     send("OK Nickname changed.\n");
                 }else
@@ -148,97 +154,129 @@ public class ClientInfo extends Thread{
 
     private void handleSIP(String msg){
         String command = extractSIP(msg);
-        ClientInfo tmp = null;
+        ClientInfo tmp;
         String[] array;
         array = msg.split(" ");
-
+        boolean sendMsg=false;
         switch (command){
             case "INVITE":
                 tmp = server.GetUser(array[2]);
+                if(tmp.User) {
+                    if (!username.equals(tmp.username)) {
+                        if (!this.inSession) {
+                            if (!tmp.inSession) {
+                                this.inSession = true;
+                                tmp.inSession = true;
 
-                if(!this.inSession){
-                    if(!tmp.inSession){
-                        this.inSession=true;
-                        tmp.inSession = true;
+                                this.inSessionWithID = tmp.id;
+                                tmp.inSessionWithID = this.id;
 
-                        this.inSessionWithID = tmp.id;
-                        tmp.inSessionWithID = this.id;
-
-                        msg = msg.replace(("#" + tmp.username), tmp.ipAddress.toString());
-                        break;
-                    }
-                }
-                send("SIP CANCEL BUSY");
+                                msg = msg.replace(("#" + tmp.username), tmp.ipAddress.toString());
+                                sendMsg = true;
+                                break;
+                            }
+                        }
+                        send("SIP CANCEL BUSY");
+                    }else
+                        send("SIP CANCEL Can't call yourself.");
+                }else
+                    send("SIP CANCEL User don't exist.");
                 break;
 
 
             case "TRO":
                 tmp = server.GetUser(array[2]);
-                msg = msg.replace(" "+array[2]," " + ipAddress.getHostAddress());
+                if(tmp.User) {
+                    msg = msg.replace(" " + array[2], " " + ipAddress.getHostAddress());
+                    sendMsg = true;
+                }
                 break;
 
             case "ACK":
                 tmp = server.GetUser(array[2]);
-                msg = msg.replace(" "+array[2],"");
+                if(tmp.User) {
+                    msg = msg.replace(" " + array[2], "");
+                    sendMsg = true;
+                }
                 break;
 
             case "BYE":
                 tmp = server.GetUser(array[2]);
-
-                if(this.inSession){
-                        if(tmp.inSession){
-                            if(tmp.id == this.inSessionWithID && tmp.inSessionWithID == this.id){
-                                msg = msg.replace(" "+array[2],"");
+                if(tmp.User) {
+                    if (this.inSession) {
+                        if (tmp.inSession) {
+                            if (tmp.id == this.inSessionWithID && tmp.inSessionWithID == this.id) {
+                                msg = msg.replace(" " + array[2], "");
                                 this.inSession = false;
                                 this.inSessionWithID = -1;
                                 tmp.inSession = false;
                                 tmp.inSessionWithID = -1;
+                                sendMsg = true;
                                 break;
                             }
+                        } else {
+                            send("SIP CANCEL RECEIVER NOT IN SESSION");
+                            break;
                         }
-                        else{
-                        send("SIP CANCEL RECEIVER NOT IN SESSION");
-                        break;
+                    } else {
+                        send("SIP CANCEL NOT IN SESSION");
                     }
-                }
-                else {
-                    send("SIP CANCEL NOT IN SESSION");
                 }
                 break;
 
             case "200":
                 tmp = server.GetUser(array[3]);
-                msg = msg.replace(" "+array[3],"");
+                if(tmp.User) {
+                    msg = msg.replace(" " + array[3], "");
+                    sendMsg = true;
+                }
                 break;
 
             case "CANCEL":
                 tmp = server.GetUser(array[2]);
-                msg = msg.replace(" "+array[2],"");
+                if(tmp.User) {
+                    msg = msg.replace(" " + array[2], "");
+                    sendMsg = true;
+                }
                 break;
 
             case "ABORT":
                 tmp = server.GetUser(inSessionWithID);
-                if(this.inSession) {
-                    if (tmp.inSession) {
-                        if (tmp.id == this.inSessionWithID && tmp.inSessionWithID == this.id) {
-                            this.inSession = false;
-                            tmp.inSession = false;
-                            break;
-                        } else {
-                            this.inSession = false;
-                            inSessionWithID = -1;
+                if(tmp.User) {
+                    if (this.inSession) {
+                        if (tmp.inSession) {
+                            if (tmp.id == this.inSessionWithID && tmp.inSessionWithID == this.id) {
+                                this.inSession = false;
+                                this.inSessionWithID = -1;
+                                tmp.inSession = false;
+                                tmp.inSessionWithID = -1;
+                                msg = "\nSIP CANCEL The other party aborted session.";
+                                sendMsg = true;
+                                break;
+                            } else {
+                                this.inSession = false;
+                                inSessionWithID = -1;
+                            }
                         }
                     }
                 }
                 break;
 
             default:
-                System.out.println("handle sip: invalid sip ");
+                System.out.println(id + " - " + username + ": Handle SIP: invalid sip.");
+                send("SIP CANCEL Invalid sip command.");
+                tmp=server.GetUser(inSessionWithID);
+                msg = "SIP CANCEL Something went wrong.";
+                inSession = false;
+                inSessionWithID = -1;
+                tmp.inSession = false;
+                tmp.inSessionWithID = -1;
+                sendMsg = true;
                 break;
         }
 
-        assert tmp != null;
-        tmp.send(msg);
+        if (sendMsg)//tmp.User && !username.equals(tmp.username))
+            tmp.send(msg);
     }
 
     private String extractSIP(String msg){

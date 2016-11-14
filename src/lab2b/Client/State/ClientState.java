@@ -44,6 +44,7 @@ public abstract class ClientState {
             return ResetState();
         }
     }
+
     public ClientState ResetState(){return new StateIdle();}
     public ClientState ResetState(String msg){
         try {
