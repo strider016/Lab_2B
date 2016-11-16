@@ -48,19 +48,26 @@ public class ClientInfo extends Thread{
         try {
             while (run) {
                 String msg = reader.readLine();
-                if (msg != null) {
+                //if (msg != null) {
                     System.out.println(username + ": " + msg);
                     if (msg.startsWith("/") || msg.startsWith("SIP"))
                         handleCommand(msg);
                     else
                         handleMessage(msg);
-                }
+                //}
             }
         }catch (NullPointerException ignored){
         }catch (Exception e){
             e.printStackTrace();
         }
         finally {
+            if (inSession){
+                ClientInfo tmp = server.GetUser(inSessionWithID);
+                if (tmp.inSession && tmp.inSessionWithID == id){
+                    tmp.inSession = false;
+                    tmp.inSessionWithID = -1;
+                }
+            }
             server.removeClient(id);
             System.out.println(id + " - " + username + ": has disconnected.");
         }
